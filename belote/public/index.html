@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a2a1d">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230d5a3b'/%3E%3Ctext x='32' y='46' font-size='40' text-anchor='middle' fill='%23ffd54a'%3E%E2%99%A0%3C/text%3E%3C/svg%3E">
+<title>Belote en ligne</title>
+<style>
+:root{--cwb:clamp(46px,11.5vw,84px);--cw:var(--cwb);--ch:calc(var(--cw)*1.42);--gold:#ffd54a;--ink:#1b1b1f;--red:#c0262d}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#0a2a1d;color:#f4f1e8;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+button{font:inherit;cursor:pointer}
+.screen{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;background:radial-gradient(ellipse at 50% 20%,#14684a,#0a2a1d 70%)}
+.box{width:100%;max-width:460px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:22px;backdrop-filter:blur(6px)}
+h1{margin:0 0 4px;font-family:Georgia,serif;font-size:34px;letter-spacing:.5px}
+h1 span{color:var(--gold)}
+h2{margin:0 0 12px;font-size:18px}
+.sub{opacity:.75;margin:0 0 18px;font-size:14px}
+label{display:block;font-size:13px;opacity:.8;margin:12px 0 4px}
+input,select{width:100%;padding:11px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.35);color:#fff;font:inherit;font-size:16px}
+input.code{text-transform:uppercase;letter-spacing:6px;text-align:center;font-weight:700}
+.row{display:flex;gap:10px;align-items:center}
+.row>*{flex:1}
+.btn{background:var(--gold);color:var(--ink);border:0;border-radius:10px;padding:11px 16px;font-weight:700;font-size:15px;box-shadow:0 2px 0 rgba(0,0,0,.3)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.alt{background:rgba(255,255,255,.14);color:#fff;box-shadow:none}
+.btn.block{width:100%;margin-top:14px}
+.btn.suit{font-size:26px;line-height:1;padding:8px 16px;background:#fffdf6;color:var(--ink)}
+.btn.suit.red{color:var(--red)}
+.sep{text-align:center;opacity:.55;margin:16px 0 0;font-size:13px}
+.err{color:#ff9a9a;font-size:14px;min-height:18px;margin-top:8px}
+
+/* Salle d'attente */
+.codeline{display:flex;align-items:center;gap:10px;justify-content:space-between;background:rgba(0,0,0,.3);border-radius:12px;padding:10px 14px;margin-bottom:6px}
+.codeline b{font-size:28px;letter-spacing:8px;font-family:Georgia,serif;color:var(--gold)}
+.teams{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.team{background:rgba(0,0,0,.25);border-radius:14px;padding:10px}
+.team h3{margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:1px;opacity:.8}
+.team .face{font-size:11px;opacity:.55;text-align:center;margin:4px 0}
+.seat{position:relative;min-height:62px;border-radius:10px;padding:8px 26px 8px 10px;background:rgba(255,255,255,.08);display:flex;flex-direction:column;justify-content:center;gap:4px}
+.seat.you{outline:2px solid var(--gold)}
+.seat.empty{background:transparent;border:1px dashed rgba(255,255,255,.3);padding:6px;gap:6px}
+.seat.empty .btn{padding:6px 8px;font-size:13px}
+.sname{font-weight:700;word-break:break-word}
+.tag{font-size:10px;background:rgba(255,255,255,.18);border-radius:5px;padding:1px 6px;margin-right:4px}
+.tag.h{background:var(--gold);color:var(--ink)}.tag.off{background:#a33}
+.x{position:absolute;top:4px;right:4px;border:0;background:rgba(255,255,255,.15);color:#fff;border-radius:50%;width:22px;height:22px;line-height:20px;padding:0;font-size:12px}
+
+/* Table de jeu */
+#game{position:fixed;inset:0;display:flex;flex-direction:column;background:radial-gradient(ellipse at 50% 45%,#157a52 0%,#0d5a3b 45%,#08301f 100%)}
+.topbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 10px;background:rgba(0,0,0,.35);font-size:13px}
+.pill{background:rgba(255,255,255,.12);border-radius:999px;padding:4px 11px;white-space:nowrap}
+.pill b{font-size:15px}
+.pill.dim{opacity:.7}
+.sy{font-size:18px;vertical-align:-1px}.sy.red{color:#ff6b6b}
+.spacer{flex:1}
+.ibtn{background:rgba(255,255,255,.14);color:#fff;border:0;border-radius:8px;padding:5px 10px;font-size:13px}
+.table{position:relative;flex:1;min-height:0}
+.p{position:absolute;display:flex;flex-direction:column;align-items:center;gap:4px;max-width:34vw}
+.p-top{top:8px;left:50%;transform:translateX(-50%)}
+.p-left{left:6px;top:50%;transform:translateY(-50%);max-width:23vw}
+.p-right{right:6px;top:50%;transform:translateY(-50%);max-width:23vw}
+.plate{display:inline-flex;flex-wrap:wrap;gap:4px;align-items:center;justify-content:center;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.16);padding:4px 10px;border-radius:14px;font-size:13px;max-width:100%}
+.plate .n{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.plate.mine{border-color:rgba(255,213,74,.55)}
+.plate.turn{box-shadow:0 0 0 2px var(--gold),0 0 18px rgba(255,213,74,.65);animation:pulse 1.4s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 2px var(--gold),0 0 4px rgba(255,213,74,.3)}}
+.badge{font-size:9px;background:var(--gold);color:var(--ink);border-radius:5px;padding:1px 5px;font-weight:800;text-transform:uppercase}
+.badge.take{background:#8fe3a8}.badge.off{background:#c44;color:#fff}
+.say{background:#fffdf6;color:var(--ink);border-radius:10px;padding:2px 10px;font-size:12px;font-weight:700}
+.fan{display:flex}
+.fan .card{--cw:calc(var(--cwb)*.5);margin-left:calc(var(--cw)*-.62)}
+.fan .card:first-child{margin-left:0}
+.p-left .fan,.p-right .fan{flex-direction:column}
+.p-left .fan .card,.p-right .fan .card{margin-left:0;margin-top:calc(var(--ch)*-.8)}
+.p-left .fan .card:first-child,.p-right .fan .card:first-child{margin-top:0}
+.center{--cw:calc(var(--cwb)*.85);position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:calc(var(--cwb)*3.6);height:calc(var(--cwb)*2.95)}
+.slot{position:absolute;animation:drop .22s ease-out}
+@keyframes drop{from{opacity:0;transform:translate(var(--dx,0),var(--dy,0)) scale(1.15)}}
+.slot.bottom{left:50%;bottom:0;margin-left:calc(var(--cw)*-.5);--dy:40px}
+.slot.top{left:50%;top:0;margin-left:calc(var(--cw)*-.5);--dy:-40px}
+.slot.left{left:0;top:50%;margin-top:calc(var(--ch)*-.5);--dx:-40px}
+.slot.right{right:0;top:50%;margin-top:calc(var(--ch)*-.5);--dx:40px}
+.ret{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.ret .card{--cw:var(--cwb)}
+.ret.dim .card{opacity:.45}
+.cap{font-size:12px;opacity:.85;text-transform:uppercase;letter-spacing:1px}
+.lt{position:absolute;left:8px;top:8px;background:rgba(0,0,0,.65);border-radius:12px;padding:8px 10px;font-size:12px;z-index:5}
+.lt .ltc{display:flex;gap:6px;margin-top:6px}
+.lt .ltc div{text-align:center}.lt .ltc .card{--cw:calc(var(--cwb)*.55);margin:0 auto 2px}
+.lt .w .card{outline:2px solid var(--gold)}
+.bottom{background:linear-gradient(transparent,rgba(0,0,0,.4) 35%);padding-top:4px}
+.mine-plate{display:flex;justify-content:center;gap:6px;align-items:center;flex-wrap:wrap}
+.controls{min-height:50px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;padding:6px 10px;font-size:14px}
+.hint{opacity:.85}.hint.strong{color:var(--gold);font-weight:700;opacity:1}
+.hand{display:flex;justify-content:center;padding:6px 8px calc(10px + env(safe-area-inset-bottom));min-height:calc(var(--ch) + 20px)}
+.hand .card{margin-left:calc(var(--cw)*-.32);transition:transform .12s,filter .12s}
+.hand .card:first-child{margin-left:0}
+.hand .card.ok{cursor:pointer;box-shadow:0 0 0 2px var(--gold),0 4px 10px rgba(0,0,0,.35)}
+.hand .card.ok:hover{transform:translateY(-14px)}
+.hand .card.no{filter:brightness(.55)}
+
+/* Cartes */
+.card{position:relative;width:var(--cw);height:var(--ch);background:linear-gradient(#fffdf6,#f1ecdd);border-radius:calc(var(--cw)*.1);box-shadow:0 1px 2px rgba(0,0,0,.4),0 4px 10px rgba(0,0,0,.25);color:var(--ink);font-family:Georgia,"Times New Roman",serif;flex:none;user-select:none}
+.card.red{color:var(--red)}
+.card .tl{position:absolute;top:calc(var(--cw)*.07);left:calc(var(--cw)*.09);font-size:calc(var(--cw)*.3);font-weight:700;line-height:1;text-align:center}
+.card .tl i{display:block;font-style:normal;font-size:.9em}
+.card .mid{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:calc(var(--cw)*.62);padding:calc(var(--cw)*.3) 0 0 calc(var(--cw)*.12)}
+.card.back{background:repeating-linear-gradient(45deg,#2a5db0 0 5px,#1c4688 5px 10px);border:calc(var(--cw)*.06) solid #fffdf6}
+.card.back *{display:none}
+
+/* Fenêtres */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;padding:14px;z-index:20;overflow:auto}
+.modal{background:#14231b;border:1px solid rgba(255,255,255,.2);border-radius:18px;padding:20px;width:100%;max-width:440px}
+.modal h2{margin:0 0 4px;font-family:Georgia,serif;font-size:24px}
+.modal .sub{margin-bottom:12px}
+table.res{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0}
+table.res th,table.res td{padding:6px 4px;text-align:right;border-bottom:1px solid rgba(255,255,255,.1)}
+table.res th:first-child,table.res td:first-child{text-align:left}
+table.res tr.tot td{font-weight:800;font-size:17px;border-bottom:0;color:var(--gold)}
+.win{color:#8fe3a8}.lose{color:#ff9a9a}
+#toast{position:fixed;left:50%;top:14px;transform:translate(-50%,-80px);background:#fffdf6;color:var(--ink);padding:10px 18px;border-radius:12px;font-weight:700;z-index:50;transition:transform .25s;max-width:90vw;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.4)}
+#toast.show{transform:translate(-50%,0)}
+@media (max-height:560px){.p-top{top:2px}.controls{min-height:40px;padding:2px 10px}}
+</style>
+</head>
+<body>
+
+<main id="home" class="screen" hidden>
+  <div class="box">
+    <h1>Belote <span>♠♥</span></h1>
+    <p class="sub">Jouez à la belote avec vos amis, en ligne. 4 joueurs, 2 équipes — des robots peuvent compléter la table.</p>
+    <label for="name">Votre prénom</label>
+    <input id="name" maxlength="16" placeholder="ex. Camille" autocomplete="nickname">
+    <button class="btn block" id="create">Créer une table</button>
+    <p class="sep">— ou rejoindre une table —</p>
+    <label for="code">Code de la table</label>
+    <input id="code" class="code" maxlength="4" placeholder="ABCD" autocapitalize="characters" autocomplete="off">
+    <button class="btn alt block" id="join">Rejoindre</button>
+    <div class="err" id="homeErr"></div>
+  </div>
+</main>
+
+<main id="lobby" class="screen" hidden></main>
+<div id="game" hidden></div>
+<div id="toast" role="status"></div>
+
+<script>
+(() => {
+const SYM = {S:'♠', H:'♥', C:'♣', D:'♦'};
+const SNAME = {S:'Pique', H:'Cœur', C:'Trèfle', D:'Carreau'};
+const SUITS = ['S','H','C','D'];
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const isRed = (s) => s === 'H' || s === 'D';
+
+let sess = null, state = null, es = null, lastEvent = -1, showLast = false, showMenu = false;
+try { sess = JSON.parse(localStorage.getItem('belote.session')); } catch {}
+const saveSess = () => localStorage.setItem('belote.session', JSON.stringify(sess));
+function clearSess() {
+  sess = null; state = null; lastEvent = -1; showLast = false; showMenu = false;
+  localStorage.removeItem('belote.session');
+  if (es) { es.close(); es = null; }
+}
+
+let tt;
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+async function post(path, body) {
+  const r = await fetch(path, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || 'Erreur');
+  return j;
+}
+const act = (type, extra = {}) =>
+  post('/api/action', {room: sess.room, id: sess.id, type, ...extra}).catch((e) => toast(e.message));
+
+function show(id) {
+  for (const s of ['home', 'lobby', 'game']) $('#' + s).hidden = s !== id;
+}
+
+/* ---------- Connexion ---------- */
+function connect() {
+  if (es) es.close();
+  es = new EventSource(`/events?room=${encodeURIComponent(sess.room)}&id=${encodeURIComponent(sess.id)}`);
+  es.onmessage = (e) => { state = JSON.parse(e.data); render(); };
+  es.onerror = () => {
+    if (es && es.readyState === EventSource.CLOSED) {
+      const had = !!state;
+      clearSess(); render();
+      if (had) toast('Vous avez quitté la table (ou elle n’existe plus).');
+    }
+  };
+}
+
+/* ---------- Accueil ---------- */
+const nameInput = $('#name');
+nameInput.value = localStorage.getItem('belote.name') || '';
+const qRoom = new URLSearchParams(location.search).get('room');
+if (qRoom) $('#code').value = qRoom.toUpperCase().slice(0, 4);
+
+async function enter(kind) {
+  const name = nameInput.value.trim();
+  if (!name) { $('#homeErr').textContent = 'Entrez votre prénom.'; nameInput.focus(); return; }
+  localStorage.setItem('belote.name', name);
+  $('#homeErr').textContent = '';
+  try {
+    const out = await post('/api/' + kind, {name, room: $('#code').value});
+    sess = out; saveSess(); lastEvent = -1; history.replaceState(null, '', '/'); connect();
+  } catch (e) { $('#homeErr').textContent = e.message; }
+}
+$('#create').onclick = () => enter('create');
+$('#join').onclick = () => enter('join');
+$('#code').addEventListener('keydown', (e) => { if (e.key === 'Enter') enter('join'); });
+nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') enter($('#code').value ? 'join' : 'create'); });
+
+/* ---------- Rendu ---------- */
+function render() {
+  if (!state) { show('home'); return; }
+  if (!state.started) { show('lobby'); renderLobby(); }
+  else { show('game'); renderGame(); }
+}
+
+function cardHTML(id, cls = '') {
+  const s = id.slice(-1), r = id.slice(0, -1);
+  return `<div class="card ${isRed(s) ? 'red' : ''} ${cls}" data-card="${id}"><span class="tl">${r}<i>${SYM[s]}</i></span><span class="mid">${SYM[s]}</span></div>`;
+}
+const BACK = '<div class="card back"></div>';
+
+function renderLobby() {
+  const v = state, host = v.host === v.you, link = location.origin + '/?room=' + v.code;
+  const cell = (i) => {
+    const s = v.seats[i];
+    if (s) {
+      const you = i === v.you;
+      return `<div class="seat ${you ? 'you' : ''}"><div class="sname">${esc(s.name)}</div><div>` +
+        (you ? '<span class="tag">Vous</span>' : '') + (s.bot ? '<span class="tag">Robot</span>' : '') +
+        (v.host === i ? '<span class="tag h">Hôte</span>' : '') + (!s.online ? '<span class="tag off">hors ligne</span>' : '') +
+        `</div>` + (host && !you ? `<button class="x" data-act="kick" data-seat="${i}" title="Retirer">✕</button>` : '') + `</div>`;
+    }
+    return `<div class="seat empty"><button class="btn alt" data-act="sit" data-seat="${i}">S’asseoir ici</button>` +
+      (host ? `<button class="btn alt" data-act="addBot" data-seat="${i}">+ Robot</button>` : '') + `</div>`;
+  };
+  const full = v.seats.every(Boolean);
+  $('#lobby').innerHTML = `<div class="box">
+    <h2>Salle d’attente</h2>
+    <p class="sub">Partagez ce code ou ce lien avec vos amis. Les partenaires sont assis face à face.</p>
+    <div class="codeline"><b>${esc(v.code)}</b><button class="btn alt" data-act="copy">Copier le lien</button></div>
+    <div class="teams">
+      <div class="team"><h3>Équipe 1</h3>${cell(0)}<div class="face">↕ partenaires</div>${cell(2)}</div>
+      <div class="team"><h3>Équipe 2</h3>${cell(1)}<div class="face">↕ partenaires</div>${cell(3)}</div>
+    </div>
+    <label>Objectif de la partie</label>
+    ${host ? `<select data-act="target">${[301,501,701,1000].map((n) => `<option value="${n}" ${n === v.target ? 'selected' : ''}>${n} points</option>`).join('')}</select>`
+           : `<div class="pill">${v.target} points</div>`}
+    ${host ? `<div class="row" style="margin-top:14px"><button class="btn alt" data-act="fillBots" ${full ? 'disabled' : ''}>Compléter avec des robots</button>
+      <button class="btn" data-act="start" ${full ? '' : 'disabled'}>Lancer la partie</button></div>`
+           : `<p class="sub" style="margin-top:14px">En attente du lancement par l’hôte…</p>`}
+    <button class="btn alt block" data-act="leave">Quitter la table</button>
+  </div>`;
+  $('#lobby').dataset.link = link;
+}
+
+function renderGame() {
+  const v = state, g = v.g, me = v.you, myTeam = me % 2;
+  const rel = (s) => ['bottom', 'right', 'top', 'left'][(s - me + 4) % 4];
+  const name = (s) => (v.seats[s] ? v.seats[s].name : '—');
+  const bidding = g.phase === 'bid1' || g.phase === 'bid2';
+  const playing = g.phase === 'play';
+  const active = (bidding || playing) && !g.resolving;
+
+  if (lastEvent === -1) lastEvent = g.event ? g.event.id : 0;
+  if (g.event && g.event.id !== lastEvent) {
+    lastEvent = g.event.id;
+    if (g.event.type === 'belote') toast(`${name(g.event.seat)} : ${g.event.text}`);
+    else if (g.event.type === 'redeal') toast(g.event.text);
+  }
+
+  const say = (s) => {
+    if (!bidding) return '';
+    const e = [...g.bidLog].reverse().find((x) => x.seat === s);
+    return e && e.a === 'pass' ? '<div class="say">Passe</div>' : '';
+  };
+  const plate = (s) => {
+    const i = v.seats[s], turn = active && g.turn === s;
+    const b = (g.dealer === s ? '<span class="badge">Donneur</span>' : '') +
+      (g.taker === s && g.trump ? '<span class="badge take">Preneur</span>' : '') +
+      (i && !i.online ? '<span class="badge off">hors ligne</span>' : '');
+    return `<div class="plate ${s % 2 === myTeam ? 'mine' : ''} ${turn ? 'turn' : ''}"><span class="n">${esc(name(s))}</span>${b}</div>${say(s)}`;
+  };
+  const other = (s) => `<div class="p p-${rel(s)}">${plate(s)}<div class="fan">${BACK.repeat(g.counts[s])}</div></div>`;
+
+  let center = '';
+  if (bidding) {
+    center = `<div class="ret ${g.phase === 'bid2' ? 'dim' : ''}">${cardHTML(g.retourne)}<div class="cap">${g.phase === 'bid1' ? 'Retourne' : 'Refusée au 1er tour'}</div></div>`;
+  } else {
+    center = g.trick.map((t) => `<div class="slot ${rel(t.seat)}">${cardHTML(t.card)}</div>`).join('');
+  }
+
+  let controls = '';
+  if (bidding) {
+    if (g.turn === me) {
+      if (g.phase === 'bid1') {
+        const s = g.retourneSuit;
+        controls = `<button class="btn" data-act="take">Je prends à ${SYM[s]} ${SNAME[s]}</button><button class="btn alt" data-act="pass">Je passe</button>`;
+      } else {
+        controls = `<span class="hint strong">Choisissez l’atout :</span>` +
+          SUITS.filter((s) => s !== g.retourneSuit).map((s) => `<button class="btn suit ${isRed(s) ? 'red' : ''}" data-act="take" data-suit="${s}" title="${SNAME[s]}">${SYM[s]}</button>`).join('') +
+          `<button class="btn alt" data-act="pass">Je passe</button>`;
+      }
+    } else {
+      controls = `<span class="hint">${esc(name(g.turn))} réfléchit… (${g.phase === 'bid1' ? '1er' : '2e'} tour d’enchères)</span>`;
+    }
+  } else if (playing) {
+    controls = g.turn === me && !g.resolving ? '<span class="hint strong">À vous de jouer</span>'
+      : g.resolving ? '<span class="hint">Pli terminé…</span>' : `<span class="hint">Au tour de ${esc(name(g.turn))}</span>`;
+  }
+
+  const legal = g.legal ? new Set(g.legal) : null;
+  const hand = g.hand.map((c) => cardHTML(c, legal ? (legal.has(c) ? 'ok' : 'no') : '')).join('');
+
+  const trumpPill = g.trump ? `<span class="pill">Atout <b class="sy ${isRed(g.trump) ? 'red' : ''}">${SYM[g.trump]}</b> · ${esc(name(g.taker))}</span>` : '';
+  const tricks = playing ? `<span class="pill dim">Plis ${g.tricksWon[myTeam]}–${g.tricksWon[1 - myTeam]}</span>` : '';
+
+  const lt = showLast && g.lastTrick ? `<div class="lt"><b>Dernier pli</b> — ${esc(name(g.lastTrick.winner))} (${g.lastTrick.points} pts)<div class="ltc">${
+    g.lastTrick.cards.map((t) => `<div class="${t.seat === g.lastTrick.winner ? 'w' : ''}">${cardHTML(t.card)}<small>${esc(name(t.seat).slice(0, 7))}</small></div>`).join('')}</div></div>` : '';
+
+  $('#game').innerHTML = `
+    <div class="topbar">
+      <span class="pill">Nous <b>${g.scores[myTeam]}</b></span><span class="pill">Eux <b>${g.scores[1 - myTeam]}</b></span>
+      <span class="pill dim">/ ${g.target}</span>${trumpPill}${tricks}
+      <span class="spacer"></span>
+      ${g.lastTrick ? '<button class="ibtn" data-act="last">Dernier pli</button>' : ''}
+      <button class="ibtn" data-act="menu">Menu</button>
+    </div>
+    <div class="table">
+      ${other((me + 2) % 4)}${other((me + 3) % 4)}${other((me + 1) % 4)}
+      <div class="center">${center}</div>${lt}
+    </div>
+    <div class="bottom">
+      <div class="mine-plate">${plate(me)}</div>
+      <div class="controls">${controls}</div>
+      <div class="hand">${hand}</div>
+    </div>
+    ${g.phase === 'handEnd' || g.phase === 'gameEnd' ? resultModal(g, me) : ''}
+    ${showMenu ? menuModal(v) : ''}`;
+}
+
+function resultModal(g, me) {
+  const myTeam = me % 2, r = g.result, v = state;
+  const name = (s) => (v.seats[s] ? v.seats[s].name : '—');
+  const L = (t) => (t === myTeam ? 'nous' : 'eux');
+  let title;
+  if (r.capot !== null) title = `Capot ${r.capot === myTeam ? 'pour nous' : 'pour eux'} !`;
+  else if (r.success) title = `Contrat rempli — ${L(r.takerTeam)}`;
+  else title = r.takerTeam === myTeam ? 'Dedans ! Nous chutons' : 'Dedans ! Ils chutent';
+  const me2 = (arr) => [arr[myTeam], arr[1 - myTeam]];
+  const pts = me2(r.pts), gained = me2(r.gained), scores = me2(r.scores);
+  const bel = r.belote === null ? ['—', '—'] : me2([r.belote === 0 ? 20 : 0, r.belote === 1 ? 20 : 0]).map((x) => (x ? '+20' : '—'));
+  let head = `<h2>${esc(title)}</h2><p class="sub">Atout ${SYM[r.trump]} ${SNAME[r.trump]} — pris par ${esc(name(r.taker))}</p>`;
+  let foot;
+  if (g.phase === 'gameEnd') {
+    const won = g.winnerTeam === myTeam;
+    head = `<h2 class="${won ? 'win' : 'lose'}">${won ? '🏆 Victoire !' : 'Défaite…'}</h2><p class="sub">${esc(title)} · atout ${SYM[r.trump]}</p>`;
+    foot = v.host === v.you ? '<button class="btn block" data-act="rematch">Nouvelle partie</button>' : '<p class="sub">L’hôte peut lancer une nouvelle partie.</p>';
+    foot += '<button class="btn alt block" data-act="leave">Quitter la table</button>';
+  } else {
+    foot = '<button class="btn block" data-act="next">Donne suivante</button>';
+  }
+  return `<div class="overlay"><div class="modal">${head}
+    <table class="res"><tr><th></th><th>Nous</th><th>Eux</th></tr>
+    <tr><td>Plis + 10 de der</td><td>${pts[0]}</td><td>${pts[1]}</td></tr>
+    <tr><td>Belote-rebelote</td><td>${bel[0]}</td><td>${bel[1]}</td></tr>
+    <tr><td>Points marqués</td><td>+${gained[0]}</td><td>+${gained[1]}</td></tr>
+    <tr class="tot"><td>Total</td><td>${scores[0]}</td><td>${scores[1]}</td></tr></table>${foot}</div></div>`;
+}
+
+function menuModal(v) {
+  const host = v.host === v.you;
+  const off = host ? v.seats.map((s, i) => (s && !s.bot && !s.online && i !== v.you
+    ? `<button class="btn alt block" data-act="botify" data-seat="${i}">Remplacer ${esc(s.name)} (hors ligne) par un robot</button>` : '')).join('') : '';
+  return `<div class="overlay" data-act="menu-bg"><div class="modal"><h2>Menu</h2>
+    <p class="sub">Code de la table : <b>${esc(v.code)}</b></p>
+    <button class="btn alt block" data-act="copy">Copier le lien d’invitation</button>${off}
+    <button class="btn alt block" data-act="leave">Quitter la partie</button>
+    <button class="btn block" data-act="menu">Fermer</button></div></div>`;
+}
+
+/* ---------- Événements ---------- */
+document.addEventListener('change', (e) => {
+  const el = e.target.closest('[data-act="target"]');
+  if (el) act('target', {value: Number(el.value)});
+});
+
+document.addEventListener('click', (e) => {
+  const cardEl = e.target.closest('.hand .card');
+  if (cardEl && state && state.started) {
+    if (cardEl.classList.contains('ok')) act('play', {card: cardEl.dataset.card});
+    else if (state.g.phase === 'play') toast(state.g.legal ? 'Cette carte est interdite.' : 'Ce n’est pas votre tour.');
+    return;
+  }
+  const el = e.target.closest('[data-act]');
+  if (!el || el.tagName === 'SELECT') return;
+  const a = el.dataset.act;
+  if (a === 'menu-bg') { if (e.target === el) { showMenu = false; render(); } return; }
+  if (a === 'menu') { showMenu = !showMenu; render(); return; }
+  if (a === 'last') { showLast = !showLast; render(); return; }
+  if (a === 'copy') {
+    const link = location.origin + '/?room=' + state.code;
+    (navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject()).then(() => toast('Lien copié !'), () => prompt('Copiez ce lien :', link));
+    return;
+  }
+  if (a === 'leave') {
+    if (!confirm('Quitter la table ?')) return;
+    act('leave').then(() => { clearSess(); render(); });
+    return;
+  }
+  const extra = {};
+  if (el.dataset.seat !== undefined) extra.seat = Number(el.dataset.seat);
+  if (el.dataset.suit) extra.suit = el.dataset.suit;
+  if (a === 'take' || a === 'pass') showMenu = false;
+  act(a, extra);
+});
+
+render();
+if (sess) connect();
+})();
+</script>
+</body>
+</html>

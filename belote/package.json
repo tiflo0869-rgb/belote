@@ -1,0 +1,12 @@
+{
+  "name": "belote-en-ligne",
+  "version": "1.0.0",
+  "description": "Belote multijoueur en ligne (4 joueurs, 2 équipes) — sans dépendance",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test.js"
+  },
+  "engines": { "node": ">=18" },
+  "license": "MIT"
+}
