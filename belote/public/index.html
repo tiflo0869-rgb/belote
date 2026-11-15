@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0a2a1d">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Belote">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230d5a3b'/%3E%3Ctext x='32' y='46' font-size='40' text-anchor='middle' fill='%23ffd54a'%3E%E2%99%A0%3C/text%3E%3C/svg%3E">
 <title>Belote en ligne</title>
 <style>
@@ -86,7 +92,8 @@ input.code{text-transform:uppercase;letter-spacing:6px;text-align:center;font-we
 .ret{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
 .ret .card{--cw:var(--cwb)}
 .ret.dim .card{opacity:.45}
-.cap{font-size:12px;opacity:.85;text-transform:uppercase;letter-spacing:1px}
+.cap{font-size:12px;opacity:.9;text-transform:uppercase;letter-spacing:1px;text-align:center}
+.cap b{color:var(--gold)}
 .lt{position:absolute;left:8px;top:8px;background:rgba(0,0,0,.65);border-radius:12px;padding:8px 10px;font-size:12px;z-index:5}
 .lt .ltc{display:flex;gap:6px;margin-top:6px}
 .lt .ltc div{text-align:center}.lt .ltc .card{--cw:calc(var(--cwb)*.55);margin:0 auto 2px}
@@ -279,6 +286,9 @@ function renderGame() {
     lastEvent = g.event.id;
     if (g.event.type === 'belote') toast(`${name(g.event.seat)} : ${g.event.text}`);
     else if (g.event.type === 'redeal') toast(g.event.text);
+    else if (g.event.type === 'take' && g.trump) {
+      toast(g.round === 1 ? `${name(g.event.seat)} prend à ${SYM[g.trump]} et gagne la carte du milieu` : `${name(g.event.seat)} prend à ${SYM[g.trump]}`);
+    }
   }
 
   const say = (s) => {
@@ -297,7 +307,7 @@ function renderGame() {
 
   let center = '';
   if (bidding) {
-    center = `<div class="ret ${g.phase === 'bid2' ? 'dim' : ''}">${cardHTML(g.retourne)}<div class="cap">${g.phase === 'bid1' ? 'Retourne' : 'Refusée au 1er tour'}</div></div>`;
+    center = `<div class="ret ${g.phase === 'bid2' ? 'dim' : ''}">${cardHTML(g.retourne)}<div class="cap">${g.phase === 'bid1' ? 'Le preneur<br><b>gagne cette carte</b>' : 'Refusée au 1er tour'}</div></div>`;
   } else {
     center = g.trick.map((t) => `<div class="slot ${rel(t.seat)}">${cardHTML(t.card)}</div>`).join('');
   }
@@ -429,6 +439,7 @@ document.addEventListener('click', (e) => {
 
 render();
 if (sess) connect();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
 })();
 </script>
 </body>
