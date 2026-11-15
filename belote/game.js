@@ -205,20 +205,11 @@ class Game {
     this.bidLog.push({ seat, a: 'take', suit });
     this.emit('take', seat, 'Prend');
     const stock = this.stock.slice();
-    if (this.phase === 'bid1') {
-      // Le preneur reçoit la retourne + 2 cartes, les autres 3 cartes : 8 cartes chacun
-      this.hands[seat].push(this.retourne);
-      for (let k = 0; k < 4; k++) {
-        const s = (seat + k) % 4;
-        this.hands[s].push(...stock.splice(0, s === seat ? 2 : 3));
-      }
-    } else {
-      // 2e tour : la retourne retourne dans le talon, 3 cartes chacun
-      stock.push(this.retourne);
-      for (let k = 0; k < 4; k++) {
-        const s = (seat + k) % 4;
-        this.hands[s].push(...stock.splice(0, 3));
-      }
+    // 1er ET 2e tour : le preneur gagne la retourne (+ 2 cartes), les autres 3 cartes : 8 cartes chacun
+    this.hands[seat].push(this.retourne);
+    for (let k = 0; k < 4; k++) {
+      const s = (seat + k) % 4;
+      this.hands[s].push(...stock.splice(0, s === seat ? 2 : 3));
     }
     this.stock = [];
     this.hands = this.hands.map((h) => sortHand(h, suit));
