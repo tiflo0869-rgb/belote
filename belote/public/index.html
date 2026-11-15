@@ -287,7 +287,7 @@ function renderGame() {
     if (g.event.type === 'belote') toast(`${name(g.event.seat)} : ${g.event.text}`);
     else if (g.event.type === 'redeal') toast(g.event.text);
     else if (g.event.type === 'take' && g.trump) {
-      toast(g.round === 1 ? `${name(g.event.seat)} prend à ${SYM[g.trump]} et gagne la carte du milieu` : `${name(g.event.seat)} prend à ${SYM[g.trump]}`);
+      toast(`${name(g.event.seat)} prend à ${SYM[g.trump]} et gagne la carte du milieu`);
     }
   }
 
@@ -307,7 +307,7 @@ function renderGame() {
 
   let center = '';
   if (bidding) {
-    center = `<div class="ret ${g.phase === 'bid2' ? 'dim' : ''}">${cardHTML(g.retourne)}<div class="cap">${g.phase === 'bid1' ? 'Le preneur<br><b>gagne cette carte</b>' : 'Refusée au 1er tour'}</div></div>`;
+    center = `<div class="ret">${cardHTML(g.retourne)}<div class="cap">Le preneur<br><b>gagne cette carte</b></div></div>`;
   } else {
     center = g.trick.map((t) => `<div class="slot ${rel(t.seat)}">${cardHTML(t.card)}</div>`).join('');
   }
